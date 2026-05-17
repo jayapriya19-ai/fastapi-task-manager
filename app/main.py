@@ -17,4 +17,4 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 @app.get("/")
 def home():
-    return FileResponse("static/index.html")
+    return FileResponse("app/static/index.html")
