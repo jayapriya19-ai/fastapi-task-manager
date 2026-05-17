@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Task Manager</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            margin: 40px;
+        }
+
+        input,
+        button {
+            padding: 10px;
+            margin: 5px;
+        }
+
+        .task {
+            border: 1px solid gray;
+            padding: 10px;
+            margin-top: 10px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <h1>Task Manager</h1>
+
+    <h2>Register</h2>
+
+    <input type="text" id="register_username" placeholder="Username">
+
+    <input type="email" id="register_email" placeholder="Email">
+
+    <input type="password" id="register_password" placeholder="Password">
+
+    <button onclick="registerUser()">
+        Register
+    </button>
+
+
+    <h2>Login</h2>
+
+    <input type="email" id="login_email" placeholder="Email">
+
+    <input type="password" id="login_password" placeholder="Password">
+
+    <button onclick="loginUser()">
+        Login
+    </button>
+
+
+    <h2>Create Task</h2>
+
+    <input type="text" id="task_title" placeholder="Task Title">
+
+    <input type="text" id="task_description" placeholder="Description">
+
+    <button onclick="createTask()">
+        Create Task
+    </button>
+
+
+    <h2>Tasks</h2>
+
+    <button onclick="loadTasks()">
+        Load Tasks
+    </button>
+
+    <div id="taskList"></div>
+
+
+    <script>
+
+        let token = ""
+
+
+        async function registerUser() {
+
+            const response = await fetch('/register', {
+
+                method: 'POST',
+
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+
+                body: JSON.stringify({
+
+                    username: document.getElementById(
+                        'register_username'
+                    ).value,
+
+                    email: document.getElementById(
+                        'register_email'
+                    ).value,
+
+                    password: document.getElementById(
+                        'register_password'
+                    ).value
+                })
+            })
+
+            const data = await response.json()
+
+            alert(JSON.stringify(data))
+        }
+
+
+
+        async function loginUser() {
+
+            const email = document.getElementById(
+                'login_email'
+            ).value
+
+            const password = document.getElementById(
+                'login_password'
+            ).value
+
+            const formData =
+                `username=${encodeURIComponent(email)}` +
+                `&password=${encodeURIComponent(password)}`
+
+            const response = await fetch('/login', {
+
+                method: 'POST',
+
+                headers: {
+                    'Content-Type':
+                        'application/x-www-form-urlencoded'
+                },
+
+                body: formData
+            })
+
+            const data = await response.json()
+
+            console.log(data)
+
+            token = data.access_token
+
+            if (token) {
+
+                alert("Login Successful")
+
+            } else {
+
+                alert("Login Failed")
+            }
+        }
+
+
+
+        async function createTask() {
+
+            if (!token) {
+
+                alert("Please login first")
+
+                return
+            }
+
+            const response = await fetch('/tasks', {
+
+                method: 'POST',
+
+                headers: {
+
+                    'Content-Type': 'application/json',
+
+                    'Authorization': `Bearer ${token}`
+                },
+
+                body: JSON.stringify({
+
+                    title: document.getElementById(
+                        'task_title'
+                    ).value,
+
+                    description: document.getElementById(
+                        'task_description'
+                    ).value
+                })
+            })
+
+            const data = await response.json()
+
+            console.log(data)
+
+            alert("Task Created")
+
+            loadTasks()
+        }
+
+
+
+        async function loadTasks() {
+
+            if (!token) {
+
+                alert("Please login first")
+
+                return
+            }
+
+            const response = await fetch('/tasks', {
+
+                method: 'GET',
+
+                headers: {
+
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+
+            const tasks = await response.json()
+
+            console.log(tasks)
+
+            const taskList =
+                document.getElementById('taskList')
+
+            taskList.innerHTML = ""
+
+            tasks.forEach(task => {
+
+                taskList.innerHTML += `
+
+            <div class="task">
+
+                <h3>${task.title}</h3>
+
+                <p>${task.description}</p>
+
+                <p>
+                    Completed:
+                    ${task.completed}
+                </p>
+
+                <button
+                    onclick="completeTask(${task.id})"
+                >
+                    Complete
+                </button>
+
+                <button
+                    onclick="deleteTask(${task.id})"
+                >
+                    Delete
+                </button>
+
+            </div>
+
+        `
+            })
+        }
+
+
+
+        async function completeTask(id) {
+
+            await fetch(`/tasks/${id}`, {
+
+                method: 'PUT',
+
+                headers: {
+
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+
+            loadTasks()
+        }
+
+
+
+        async function deleteTask(id) {
+
+            await fetch(`/tasks/${id}`, {
+
+                method: 'DELETE',
+
+                headers: {
+
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+
+            loadTasks()
+        }
+
+    </script>
+
+</body>
+
+</html>
