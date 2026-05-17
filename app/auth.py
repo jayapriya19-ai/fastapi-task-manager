@@ -1,13 +1,14 @@
 from datetime import datetime, timedelta
 from jose import jwt
+# pyrefly: ignore [missing-import]
 from passlib.context import CryptContext
 from dotenv import load_dotenv
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from database import SessionLocal
-from models import User
+from app.database import SessionLocal
+from app.models import User
 
 import os
 

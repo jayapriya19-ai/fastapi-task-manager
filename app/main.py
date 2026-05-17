@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-from database import engine, Base
-from routes import users, tasks
+from app.database import engine, Base
+from app.routes import users, tasks
 
 Base.metadata.create_all(bind=engine)
 
